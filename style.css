@@ -434,6 +434,17 @@ body {
   color: #A13A1D;
 }
 
+.detail-note {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.detail-note[hidden] { display: none; }
+
 /* ---------- Footer ---------- */
 
 .foot {
