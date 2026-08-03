@@ -219,17 +219,20 @@
       );
 
       if (cat.hatch) {
-        var use = document.createElementNS(svgNS, "use");
-        use.setAttributeNS(
-          "http://www.w3.org/1999/xlink",
-          "href",
-          "#" + cssEscapeId(record.district)
-        );
-        use.setAttribute("href", "#" + record.district);
-        use.setAttribute("class", "district-hatch");
-        use.style.fill = "url(#hatchArrested)";
-        use.style.stroke = "none";
-        state.svgRoot.appendChild(use);
+        // Use an independent cloned <path> (same "d") rather than <use>.
+        // A <use> that references the original path would inherit that
+        // path's own inline fill (which wins over the fill set on the
+        // <use> itself), so the hatch pattern would never actually
+        // render — and, being on top, it would silently swallow clicks
+        // meant for the district underneath. A plain cloned path avoids
+        // both problems; pointer-events is also disabled explicitly.
+        var hatchPath = document.createElementNS(svgNS, "path");
+        hatchPath.setAttribute("d", path.getAttribute("d"));
+        hatchPath.setAttribute("class", "district-hatch");
+        hatchPath.style.fill = "url(#hatchArrested)";
+        hatchPath.style.stroke = "none";
+        hatchPath.style.pointerEvents = "none";
+        state.svgRoot.appendChild(hatchPath);
       }
     });
 
