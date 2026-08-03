@@ -232,6 +232,10 @@ body {
   transition: filter 100ms ease;
 }
 
+.district:focus {
+  outline: none;
+}
+
 .district:focus-visible {
   outline: none;
   stroke: var(--focus);
@@ -281,12 +285,23 @@ body {
   border: 1px solid rgba(0,0,0,0.08);
 }
 
-.legend-swatch.hatch {
+.legend-swatch.hatch-arrested {
   background-color: #EDEDED;
   background-image: repeating-linear-gradient(
     45deg,
     rgba(0,0,0,0.4) 0px,
     rgba(0,0,0,0.4) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+}
+
+.legend-swatch.hatch-released {
+  background-color: #EDEDED;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(0,229,255,1) 0px,
+    rgba(0,229,255,1) 1px,
     transparent 1px,
     transparent 4px
   );

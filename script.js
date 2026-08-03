@@ -50,6 +50,25 @@
     "none": ""
   };
 
+  // Map-overlay flags for the "current control" view — each judicial status
+  // that should be visually flagged on the map gets its own hatch pattern
+  // (defined in injectHatchPattern) so it stays distinguishable from the
+  // others while the underlying party colour remains visible.
+  var JUDICIAL_FLAG = {
+    "arrested": {
+      pattern: "hatchArrested",
+      ariaSuffix: " — belediye başkanı tutuklu",
+      legendLabel: "Belediye başkanı tutuklu",
+      legendClass: "hatch-arrested"
+    },
+    "released": {
+      pattern: "hatchReleased",
+      ariaSuffix: " — belediye başkanı tahliye edildi",
+      legendLabel: "Belediye başkanı tahliye edildi",
+      legendClass: "hatch-released"
+    }
+  };
+
   var DATA_URL = "data.json";
   var MAP_URL = "assets/map.svg";
 
@@ -72,7 +91,7 @@
   };
 
   var zoomState = { scale: 1, x: 0, y: 0 };
-  var drag = { active: false, moved: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+  var drag = { active: false, moved: false, startX: 0, startY: 0, originX: 0, originY: 0, pointerId: 0 };
   var activePointers = {};   // pointerId -> {x, y} (mapFrame-relative), for pinch tracking
   var pinch = { active: false, startDist: 0 };
 
@@ -165,6 +184,12 @@
       '<rect width="5" height="5" fill="none"></rect>' +
       '<line x1="0" y1="0" x2="0" y2="5" stroke="#000000" ' +
       'stroke-opacity="0.32" stroke-width="1.4"></line>' +
+      '</pattern>' +
+      '<pattern id="hatchReleased" patternUnits="userSpaceOnUse" ' +
+      'width="5" height="5" patternTransform="rotate(45)">' +
+      '<rect width="5" height="5" fill="none"></rect>' +
+      '<line x1="0" y1="0" x2="0" y2="5" stroke="#00E5FF" ' +
+      'stroke-opacity="1" stroke-width="1.4"></line>' +
       '</pattern>';
     state.svgRoot.insertBefore(defs, state.svgRoot.firstChild);
   }
@@ -173,19 +198,20 @@
    * 6. View → colour logic
    * ------------------------------------------------------------------ */
 
-  // Returns { colorKey, color, hatch(bool) } for a record under the given view.
+  // Returns { colorKey, color, flag } for a record under the given view.
+  // flag is a JUDICIAL_FLAG key ("arrested" / "released") or null.
   function categorize(record, view) {
     if (view === "election2024") {
       var key = record.party2024 || "__nodata__";
-      return { colorKey: key, color: colorFor(key), hatch: false };
+      return { colorKey: key, color: colorFor(key), flag: null };
     }
 
-    // "current" view — also flags arrested mayors with a hatch overlay
+    // "current" view — also flags arrested/released mayors with a hatch overlay
     var ckey = record.currentParty || "__nodata__";
     return {
       colorKey: ckey,
       color: colorFor(ckey),
-      hatch: record.judicialStatus === "arrested"
+      flag: JUDICIAL_FLAG[record.judicialStatus] ? record.judicialStatus : null
     };
   }
 
@@ -215,13 +241,14 @@
       if (!path) return;
 
       var cat = categorize(record, state.view);
+      var flagInfo = cat.flag ? JUDICIAL_FLAG[cat.flag] : null;
       path.style.fill = cat.color;
       path.setAttribute(
         "aria-label",
-        record.district + (cat.hatch ? " — belediye başkanı tutuklu" : "")
+        record.district + (flagInfo ? flagInfo.ariaSuffix : "")
       );
 
-      if (cat.hatch) {
+      if (flagInfo) {
         // Use an independent cloned <path> (same "d") rather than <use>.
         // A <use> that references the original path would inherit that
         // path's own inline fill (which wins over the fill set on the
@@ -232,7 +259,7 @@
         var hatchPath = document.createElementNS(svgNS, "path");
         hatchPath.setAttribute("d", path.getAttribute("d"));
         hatchPath.setAttribute("class", "district-hatch");
-        hatchPath.style.fill = "url(#hatchArrested)";
+        hatchPath.style.fill = "url(#" + flagInfo.pattern + ")";
         hatchPath.style.stroke = "none";
         hatchPath.style.pointerEvents = "none";
         state.svgRoot.appendChild(hatchPath);
@@ -249,7 +276,7 @@
   function renderLegend() {
     var counts = {};   // colorKey -> count
     var order = [];
-    var anyHatch = false;
+    var flagsSeen = {}; // JUDICIAL_FLAG key -> true
 
     state.records.forEach(function (record) {
       var cat = categorize(record, state.view);
@@ -258,7 +285,7 @@
         order.push(cat.colorKey);
       }
       counts[cat.colorKey]++;
-      if (cat.hatch) anyHatch = true;
+      if (cat.flag) flagsSeen[cat.flag] = true;
     });
 
     // Sort categories by frequency, descending.
@@ -275,10 +302,13 @@
         color + '"></span>' + escapeHtml(label) + "</span>";
     });
 
-    if (anyHatch) {
+    Object.keys(JUDICIAL_FLAG).forEach(function (flag) {
+      if (!flagsSeen[flag]) return;
+      var info = JUDICIAL_FLAG[flag];
       html +=
-        '<span class="legend-item"><span class="legend-swatch hatch"></span>Belediye başkanı tutuklu</span>';
-    }
+        '<span class="legend-item"><span class="legend-swatch ' + info.legendClass +
+        '"></span>' + escapeHtml(info.legendLabel) + "</span>";
+    });
 
     els.legend.innerHTML = html;
   }
@@ -522,12 +552,16 @@
 
     els.mapFrame.addEventListener("pointerdown", function (e) {
       activePointers[e.pointerId] = framePoint(e);
-      try { els.mapFrame.setPointerCapture(e.pointerId); } catch (err) {}
 
       var count = Object.keys(activePointers).length;
 
       if (count === 2) {
         // Second finger landed — switch from panning to pinch-zoom.
+        // Capture both pointers so we keep getting their moves even if a
+        // finger strays outside the frame bounds mid-gesture.
+        Object.keys(activePointers).forEach(function (id) {
+          try { els.mapFrame.setPointerCapture(Number(id)); } catch (err) {}
+        });
         drag.active = false;
         drag.moved = true; // suppress the click that would otherwise open a district
         els.mapFrame.classList.remove("is-dragging");
@@ -546,8 +580,12 @@
       drag.startY = e.clientY;
       drag.originX = zoomState.x;
       drag.originY = zoomState.y;
+      drag.pointerId = e.pointerId;
       els.mapFrame.classList.add("is-dragging");
       els.mapHolder.classList.add("is-panning");
+      // Pointer capture is deferred to the first real movement (below) —
+      // capturing here would retarget the eventual "click" to mapFrame
+      // instead of the district path underneath, breaking taps while zoomed.
     });
 
     els.mapFrame.addEventListener("pointermove", function (e) {
@@ -566,7 +604,10 @@
       if (!drag.active) return;
       var dx = e.clientX - drag.startX;
       var dy = e.clientY - drag.startY;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) drag.moved = true;
+      if (!drag.moved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+        drag.moved = true;
+        try { els.mapFrame.setPointerCapture(drag.pointerId); } catch (err) {}
+      }
       zoomState.x = drag.originX + dx;
       zoomState.y = drag.originY + dy;
       applyTransform();
