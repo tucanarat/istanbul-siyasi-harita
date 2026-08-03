@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İstanbul İlçe Siyasi Haritası</title>
+<meta name="description" content="İstanbul'un 39 ilçesini kapsayan interaktif harita: 31 Mart 2024 yerel seçim sonuçları ve mevcut siyasi durum.">
+
+<!-- Inter typeface -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="wrap" id="app" role="application" aria-label="İstanbul ilçe siyasi haritası">
+
+  <!-- Title -->
+  <header class="head">
+    <h1 class="title">İstanbul'un 39 İlçesi: Kim Yönetiyor?</h1>
+    <p class="subtitle">31 Mart 2024 yerel seçim sonuçları ve mevcut siyasi durum</p>
+  </header>
+
+  <!-- Segmented control -->
+  <nav class="tabs" role="tablist" aria-label="Harita görünümü">
+    <button class="tab" role="tab" id="tab-2024" aria-controls="panel-map" aria-selected="true" data-view="election2024">
+      31 Mart 2024 Yerel Seçimleri
+    </button>
+    <button class="tab" role="tab" id="tab-current" aria-controls="panel-map" aria-selected="false" tabindex="-1" data-view="current">
+      Mevcut Durum
+    </button>
+  </nav>
+
+  <!-- Main layout: map + detail panel -->
+  <div class="stage" id="panel-map" role="tabpanel" aria-labelledby="tab-2024">
+
+    <div class="map-col">
+      <div class="map-frame" id="mapFrame">
+        <div class="map-svg-holder" id="mapHolder" aria-label="İstanbul ilçeleri haritası" role="img">
+          <!-- map.svg injected here by script.js -->
+        </div>
+        <p class="map-loading" id="mapLoading">Harita yükleniyor…</p>
+
+        <!-- Zoom controls -->
+        <div class="zoom-controls" id="zoomControls">
+          <button type="button" class="zoom-btn" id="zoomIn" aria-label="Yakınlaştır">+</button>
+          <button type="button" class="zoom-btn" id="zoomOut" aria-label="Uzaklaştır">−</button>
+          <button type="button" class="zoom-btn zoom-btn-reset" id="zoomReset" aria-label="Yakınlaştırmayı sıfırla">⤾</button>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend" id="legend" aria-live="polite"></div>
+    </div>
+
+    <!-- Detail panel -->
+    <aside class="detail" id="detail" aria-live="polite">
+
+      <div class="search-box" role="search">
+        <label for="districtSearch" class="search-label">İlçe Ara</label>
+        <input type="search" id="districtSearch" class="search-input" list="districtList"
+               placeholder="Örn. Kadıköy" autocomplete="off" aria-label="İlçe adı ile ara">
+        <datalist id="districtList"></datalist>
+      </div>
+
+      <div class="detail-empty" id="detailEmpty">
+        <p>Bir ilçe seçin</p>
+        <p class="detail-empty-sub">Önizlemek için üzerine gelin; ayrıntılar için tıklayın ya da Enter'a basın.</p>
+      </div>
+
+      <div class="detail-card" id="detailCard" tabindex="-1" hidden>
+        <button class="detail-close" id="detailClose" aria-label="Ayrıntıları kapat">×</button>
+        <h2 class="detail-title" id="detailTitle"></h2>
+        <p class="detail-mayor" id="detailMayor"></p>
+        <dl class="detail-lines" id="detailLines"></dl>
+      </div>
+    </aside>
+
+  </div>
+
+  <footer class="foot">
+    <p>Kaynak: belediye ve haber kayıtlarından derlenmiştir, 2024–2026. Harita sınırları görüntüleme amacıyla sadeleştirilmiştir.</p>
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,467 @@
+/* ==========================================================================
+   Istanbul District Political Map — Stylesheet
+   Editorial / data-journalism aesthetic (FT · Reuters Graphics · Datawrapper)
+   No gradients, no shadows, no decorative effects, minimal motion.
+   ========================================================================== */
+
+:root {
+  --ink: #16171A;
+  --ink-soft: #56585E;
+  --ink-faint: #8A8C92;
+  --line: #D8D9DC;
+  --line-strong: #B9BABE;
+  --bg: #FFFFFF;
+  --panel-bg: #FAFAFA;
+  --accent: #16171A;
+  --focus: #1266F1;
+  --radius: 2px;
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 20px 16px 28px;
+}
+
+/* ---------- Header ---------- */
+
+.head {
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ---------- Segmented control ---------- */
+
+.tabs {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 16px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.tab {
+  appearance: none;
+  border: none;
+  background: var(--bg);
+  color: var(--ink-soft);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 14px;
+  cursor: pointer;
+  border-right: 1px solid var(--line);
+  white-space: nowrap;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.tab:last-child { border-right: none; }
+
+.tab:hover { background: var(--panel-bg); color: var(--ink); }
+
+.tab[aria-selected="true"] {
+  background: var(--ink);
+  color: #fff;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+  z-index: 1;
+  position: relative;
+}
+
+/* ---------- Stage layout: map + detail panel ---------- */
+
+.stage {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 700px) {
+  .stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+.map-col {
+  min-width: 0; /* allow shrink inside grid */
+}
+
+.map-frame {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  width: 100%;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.map-frame.is-zoomed {
+  cursor: grab;
+}
+
+.map-frame.is-dragging {
+  cursor: grabbing;
+}
+
+.map-svg-holder {
+  width: 100%;
+  aspect-ratio: 800 / 428;
+  display: block;
+  opacity: 1;
+  transform-origin: center center;
+  transition: opacity 200ms ease, transform 220ms ease;
+}
+
+.map-svg-holder.is-panning {
+  transition: opacity 200ms ease;
+}
+
+.map-svg-holder.fade {
+  opacity: 0;
+}
+
+.map-svg-holder svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.map-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  color: var(--ink-faint);
+  margin: 0;
+  pointer-events: none;
+}
+
+.map-loading[hidden] { display: none; }
+
+/* Zoom controls */
+
+.zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg);
+  z-index: 2;
+}
+
+.zoom-btn {
+  appearance: none;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  width: 26px;
+  height: 26px;
+  font-size: 15px;
+  line-height: 1;
+  font-family: var(--font);
+  cursor: pointer;
+  padding: 0;
+}
+
+.zoom-btn:last-child { border-bottom: none; }
+
+.zoom-btn:hover { background: var(--panel-bg); }
+
+.zoom-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+  z-index: 1;
+  position: relative;
+}
+
+.zoom-btn-reset { font-size: 12px; }
+
+/* District path styling */
+
+.district {
+  stroke: #FFFFFF;
+  stroke-width: 0.8;
+  cursor: pointer;
+  transition: filter 100ms ease;
+}
+
+.district:focus-visible {
+  outline: none;
+  stroke: var(--focus);
+  stroke-width: 2;
+}
+
+.district.is-hovered {
+  filter: brightness(0.92);
+}
+
+.district.is-selected {
+  stroke: var(--ink);
+  stroke-width: 1.6;
+}
+
+.district-hatch {
+  pointer-events: none;
+}
+
+/* ---------- Legend ---------- */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.legend-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  display: inline-block;
+  flex: none;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.legend-swatch.hatch {
+  background-color: #EDEDED;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(0,0,0,0.4) 0px,
+    rgba(0,0,0,0.4) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+}
+
+/* ---------- Detail panel ---------- */
+
+.detail {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel-bg);
+  padding: 16px;
+  min-height: 180px;
+  position: relative;
+}
+
+.search-box {
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.search-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.search-input {
+  width: 100%;
+  font-family: var(--font);
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: 7px 9px;
+}
+
+.search-input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+.search-input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.detail-empty {
+  color: var(--ink-faint);
+}
+
+.detail-empty p {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.detail-empty-sub {
+  font-size: 12px !important;
+  color: var(--ink-faint);
+}
+
+.detail-card {
+  opacity: 1;
+  transition: opacity 180ms ease;
+}
+
+.detail-card:focus-visible {
+  outline: none;
+}
+
+.detail-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--ink-faint);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.detail-close:hover { color: var(--ink); }
+
+.detail-close:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.detail-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 20px 2px 0;
+  letter-spacing: -0.01em;
+}
+
+.detail-mayor {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin: 0 0 12px;
+}
+
+.detail-lines {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.9;
+}
+
+.detail-lines dt {
+  display: inline;
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+.detail-lines dt::after {
+  content: ": ";
+}
+
+.detail-lines dd {
+  display: inline;
+  margin: 0;
+  font-weight: 600;
+}
+
+.detail-lines .detail-row {
+  display: block;
+}
+
+.detail-status {
+  display: block;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.detail-status.is-flag {
+  color: #A13A1D;
+}
+
+/* ---------- Footer ---------- */
+
+.foot {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.foot p {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--ink-faint);
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .map-svg-holder,
+  .tab,
+  .detail-card,
+  .district {
+    transition: none !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .zoom-controls {
+    top: 8px;
+    right: 8px;
+  }
+}
