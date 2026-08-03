@@ -73,6 +73,8 @@
 
   var zoomState = { scale: 1, x: 0, y: 0 };
   var drag = { active: false, moved: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+  var activePointers = {};   // pointerId -> {x, y} (mapFrame-relative), for pinch tracking
+  var pinch = { active: false, startDist: 0 };
 
   /* ------------------------------------------------------------------
    * 3. DOM refs
@@ -519,6 +521,24 @@
     }, { passive: false });
 
     els.mapFrame.addEventListener("pointerdown", function (e) {
+      activePointers[e.pointerId] = framePoint(e);
+      try { els.mapFrame.setPointerCapture(e.pointerId); } catch (err) {}
+
+      var count = Object.keys(activePointers).length;
+
+      if (count === 2) {
+        // Second finger landed — switch from panning to pinch-zoom.
+        drag.active = false;
+        drag.moved = true; // suppress the click that would otherwise open a district
+        els.mapFrame.classList.remove("is-dragging");
+        els.mapHolder.classList.remove("is-panning");
+        pinch.active = true;
+        pinch.startDist = pointerDistance();
+        return;
+      }
+
+      if (count > 2 || pinch.active) return;
+
       if (zoomState.scale <= 1.001) return;
       drag.active = true;
       drag.moved = false;
@@ -528,10 +548,21 @@
       drag.originY = zoomState.y;
       els.mapFrame.classList.add("is-dragging");
       els.mapHolder.classList.add("is-panning");
-      try { els.mapFrame.setPointerCapture(e.pointerId); } catch (err) {}
     });
 
     els.mapFrame.addEventListener("pointermove", function (e) {
+      if (activePointers[e.pointerId]) activePointers[e.pointerId] = framePoint(e);
+
+      if (pinch.active && Object.keys(activePointers).length >= 2) {
+        var dist = pointerDistance();
+        if (pinch.startDist > 0 && dist > 0) {
+          var mid = pointerMidpoint();
+          zoomAt(mid.x, mid.y, dist / pinch.startDist);
+        }
+        pinch.startDist = dist;
+        return;
+      }
+
       if (!drag.active) return;
       var dx = e.clientX - drag.startX;
       var dy = e.clientY - drag.startY;
@@ -541,13 +572,32 @@
       applyTransform();
     });
 
-    function endDrag() {
+    function endDrag(e) {
+      if (e) delete activePointers[e.pointerId];
+      if (Object.keys(activePointers).length < 2) pinch.active = false;
       drag.active = false;
       els.mapFrame.classList.remove("is-dragging");
       els.mapHolder.classList.remove("is-panning");
     }
     els.mapFrame.addEventListener("pointerup", endDrag);
     els.mapFrame.addEventListener("pointercancel", endDrag);
+  }
+
+  function framePoint(e) {
+    var rect = els.mapFrame.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function pointerDistance() {
+    var ids = Object.keys(activePointers);
+    var a = activePointers[ids[0]], b = activePointers[ids[1]];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+
+  function pointerMidpoint() {
+    var ids = Object.keys(activePointers);
+    var a = activePointers[ids[0]], b = activePointers[ids[1]];
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
   }
 
   /* ------------------------------------------------------------------
