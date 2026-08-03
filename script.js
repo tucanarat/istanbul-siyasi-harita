@@ -72,7 +72,7 @@
   };
 
   var zoomState = { scale: 1, x: 0, y: 0 };
-  var drag = { active: false, moved: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+  var drag = { active: false, moved: false, startX: 0, startY: 0, originX: 0, originY: 0, pointerId: 0 };
   var activePointers = {};   // pointerId -> {x, y} (mapFrame-relative), for pinch tracking
   var pinch = { active: false, startDist: 0 };
 
@@ -522,12 +522,16 @@
 
     els.mapFrame.addEventListener("pointerdown", function (e) {
       activePointers[e.pointerId] = framePoint(e);
-      try { els.mapFrame.setPointerCapture(e.pointerId); } catch (err) {}
 
       var count = Object.keys(activePointers).length;
 
       if (count === 2) {
         // Second finger landed — switch from panning to pinch-zoom.
+        // Capture both pointers so we keep getting their moves even if a
+        // finger strays outside the frame bounds mid-gesture.
+        Object.keys(activePointers).forEach(function (id) {
+          try { els.mapFrame.setPointerCapture(Number(id)); } catch (err) {}
+        });
         drag.active = false;
         drag.moved = true; // suppress the click that would otherwise open a district
         els.mapFrame.classList.remove("is-dragging");
@@ -546,8 +550,12 @@
       drag.startY = e.clientY;
       drag.originX = zoomState.x;
       drag.originY = zoomState.y;
+      drag.pointerId = e.pointerId;
       els.mapFrame.classList.add("is-dragging");
       els.mapHolder.classList.add("is-panning");
+      // Pointer capture is deferred to the first real movement (below) —
+      // capturing here would retarget the eventual "click" to mapFrame
+      // instead of the district path underneath, breaking taps while zoomed.
     });
 
     els.mapFrame.addEventListener("pointermove", function (e) {
@@ -566,7 +574,10 @@
       if (!drag.active) return;
       var dx = e.clientX - drag.startX;
       var dy = e.clientY - drag.startY;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) drag.moved = true;
+      if (!drag.moved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+        drag.moved = true;
+        try { els.mapFrame.setPointerCapture(drag.pointerId); } catch (err) {}
+      }
       zoomState.x = drag.originX + dx;
       zoomState.y = drag.originY + dy;
       applyTransform();

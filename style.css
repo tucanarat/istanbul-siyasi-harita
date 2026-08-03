@@ -232,6 +232,10 @@ body {
   transition: filter 100ms ease;
 }
 
+.district:focus {
+  outline: none;
+}
+
 .district:focus-visible {
   outline: none;
   stroke: var(--focus);
