@@ -30,7 +30,7 @@
     "changeDescription": "No change",
     "judicialStatus": "arrested",
     "officeStatus": "suspended",
-    "note": "Üç tur süren oylama sonunda CHP’li Murat Güneş başkanvekili oldu."
+    "note": "Onursal Adıgüzel, 22 Nisan 2026’da tutuklandı. Üç tur süren oylama sonunda CHP’li Murat Güneş başkanvekili oldu."
   },
   {
     "district": "Avcılar",
@@ -41,7 +41,7 @@
     "changeDescription": "No change",
     "judicialStatus": "arrested",
     "officeStatus": "suspended",
-    "note": "CHP grubundan Yüksel Can başkanvekili seçildi."
+    "note": "Utku Caner Çaykara, 31 Mayıs 2025’te tutuklandı. CHP grubundan Yüksel Can başkanvekili seçildi."
   },
   {
     "district": "Bağcılar",
@@ -129,7 +129,7 @@
     "changeDescription": "No change",
     "judicialStatus": "arrested",
     "officeStatus": "suspended",
-    "note": "Çalık, Ekrem İmamoğlu ile birlikte 19 Mart 2025'te gözaltına alındı ve 23 Mart 2025'te tutuklandı. 26 Mart 2025'te ise Meclis Üyesi Önder Serkan Çebi Başkanvekili seçildi."
+    "note": "Çalık, Ekrem İmamoğlu ile birlikte 19 Mart 2025'te gözaltına alındı ve 23 Mart 2025'te tutuklandı. 26 Mart 2025'te ise CHP'li Önder Serkan Çebi Başkanvekili seçildi."
   },
   {
     "district": "Beyoğlu",
@@ -393,7 +393,7 @@
     "changeDescription": "Changed from CHP to AKP",
     "judicialStatus": "none",
     "officeStatus": "active",
-    "note": ""
+    "note": "Eren Ali Bingöl, 1 Ağustos'ta AKP'ye katıldı."
   },
   {
     "district": "Ümraniye",
@@ -415,7 +415,7 @@
     "changeDescription": "Changed from CHP to Belirsiz",
     "judicialStatus": "arrested",
     "officeStatus": "suspended",
-    "note": "Dedetaş, 31 Ağustos 2026'da görevden uzaklaştırıldı."
+    "note": "Dedetaş, 31 Ağustos 2026'da görevden uzaklaştırıldı. Meclis'te 5 Ağustos 2026'da başkanvekili seçimi yapılacak."
   },
   {
     "district": "Zeytinburnu",
