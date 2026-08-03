@@ -93,6 +93,7 @@
     els.detailTitle = document.getElementById("detailTitle");
     els.detailMayor = document.getElementById("detailMayor");
     els.detailLines = document.getElementById("detailLines");
+    els.detailNote = document.getElementById("detailNote");
     els.zoomIn = document.getElementById("zoomIn");
     els.zoomOut = document.getElementById("zoomOut");
     els.zoomReset = document.getElementById("zoomReset");
@@ -400,6 +401,14 @@
     }
 
     els.detailLines.innerHTML = linesHtml + statusHtml;
+
+    if (record.note) {
+      els.detailNote.textContent = record.note;
+      els.detailNote.hidden = false;
+    } else {
+      els.detailNote.textContent = "";
+      els.detailNote.hidden = true;
+    }
 
     els.detailCard.focus();
   }
