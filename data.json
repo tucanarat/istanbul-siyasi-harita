@@ -410,12 +410,12 @@
     "district": "Üsküdar",
     "mayor": "Sinem Dedetaş",
     "party2024": "CHP",
-    "currentParty": "Belirsiz",
-    "changed": true,
-    "changeDescription": "Changed from CHP to Belirsiz",
+    "currentParty": "CHP",
+    "changed": false,
+    "changeDescription": "No change",
     "judicialStatus": "arrested",
     "officeStatus": "suspended",
-    "note": "Dedetaş, 31 Ağustos 2026'da görevden uzaklaştırıldı. Meclis'te 5 Ağustos 2026'da başkanvekili seçimi yapılacak."
+    "note": "Dedetaş'ın görevden alınmasının ardından 5 Ağustos 2026'da CHP'nin adayı Sibel Tan Çetinkaya başkanvekili seçildi."
   },
   {
     "district": "Zeytinburnu",
